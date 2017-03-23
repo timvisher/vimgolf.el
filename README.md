@@ -28,3 +28,6 @@ Install `vimgolf` via your favorite version of [melpa][].
 | `vimgolf-pause` | `C-c C-v p` | Pause keystroke recording |
 | `vimgolf-continue` | `C-c C-v c` | Start keystroke recording where you left off |
 | `vimgolf-quit` | `C-c C-v q` | Stop the challenge |
+
+[vimgolf]: https://www.vimgolf.com/
+[melpa]: https://melpa.org/
