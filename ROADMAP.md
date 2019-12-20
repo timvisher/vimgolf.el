@@ -4,11 +4,14 @@
 
 1. Completing read of challenges by title rather than by challenge id
 
-2. `M-x vimgolf-browse`: Dired/Ibuffer/Magit-like interface to VimGolf challenges.
+2. `M-x vimgolf-browse`: Dired/Ibuffer/Magit-like interface to VimGolf
+   challenges.
 
     Bindings:
 
-    - Bindings should mimic Dired/Ibuffer wherever possible. Magit is listed primarily because I want TAB to open up the long description of the challenge.
+    - Bindings should mimic Dired/Ibuffer wherever possible. Magit is
+      listed primarily because I want TAB to open up the long description
+      of the challenge.
 
         At least:
 
@@ -41,10 +44,23 @@
 
     Commentary:
 
-    - Tab has been pressed on the Refactor to Helpers line and thus it's been expanded.
+    - Tab has been pressed on the Refactor to Helpers line and thus it's
+      been expanded.
 
-    - The challenges `formatted text to markdown` and `Line Zipper` have both been completed and thus are hidden. Could provide a customization setting that turns this off completely, as well as an `M-x vimgolf-show-all` function to toggle the hiding.
+    - The challenges `formatted text to markdown` and `Line Zipper` have
+      both been completed and thus are hidden. Could provide a
+      customization setting that turns this off completely, as well as an
+      `M-x vimgolf-show-all` function to toggle the hiding.
 
     - Fill column has been set to 80
 
-    - It would be fun if a local cache of the vimgolf data could be kept together so that you could record solutions or at least play offline.
+    - It would be fun if a local cache of the vimgolf data could be kept
+      together so that you could record solutions or at least play
+      offline.
+
+3. Play anarchy golf?
+
+    [anarchy golf](http://golf.shinh.org/)
+
+    No reason to have anarchy golf because it's a code golf site not a
+    text manipulation site.
