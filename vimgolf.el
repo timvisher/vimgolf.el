@@ -28,7 +28,7 @@
 ;; Use melpa
 
 ;; I make no guarantees that vimgolf.el works with anything but the latest
-;; version of emacs.
+;; version of Emacs.
 
 ;;; License:
 
@@ -56,7 +56,7 @@
   :group 'vimgolf)
 
 (defcustom vimgolf-mode-hook '((lambda () (whitespace-mode t)))
-  "A list of functions to call upon the initialization of vimgolf-mode."
+  "A list of functions to call upon the initialization of command `vimgolf-mode'."
   :type 'hook
   :group 'vimgolf)
 
@@ -110,13 +110,17 @@ with `C-c C-v` prefixes to help in playing VimGolf.
 ;; Keystroke logging
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro vimgolf-with-saved-command-environment (&rest body)
+(defmacro vimgolf-with-saved-command-environment
+    (&rest body)
+  "Execute BODY without poluting Emacs command memory."
   `(let ((deactivate-mark nil)
          (this-command this-command)
          (last-command last-command))
      ,@body))
 
-(defun vimgolf-capturable-keystroke-p ()
+(defun vimgolf-capturable-keystroke-p
+    ()
+  "Predicate for keys that shouldn't be counted."
   (not (or executing-kbd-macro
            (member this-command
                    '(digit-argument
@@ -128,7 +132,9 @@ with `C-c C-v` prefixes to help in playing VimGolf.
                      isearch-other-meta-char))
            (string-prefix-p "vimgolf-" (symbol-name this-command)))))
 
-(defun vimgolf-capturable-dangling-keystroke-p ()
+(defun vimgolf-capturable-dangling-keystroke-p
+    ()
+  "Some keystrokes are only visible after they resolve."
   (member this-command
           '(calc-dispatch)))
 
@@ -140,25 +146,33 @@ suitable for use with `key-description', and a symbol for the
 command that was executed as a result (which may be nil if an
 unknown key sequence was entered).")
 
-(defun vimgolf-maybe-capture-keystroke (pred)
-  "Store the keystrokes for `this-command' if result of calling function `PRED' is not nil."
+(defun vimgolf-maybe-capture-keystroke
+    (pred)
+  "Store the keystrokes for `this-command' if PRED is truthy."
   (vimgolf-with-saved-command-environment
    (when (funcall pred)
      (setq vimgolf-keystrokes
            (append vimgolf-keystrokes (list (cons (this-command-keys-vector)
                                                   this-command)))))))
 
-(defun vimgolf-capture-keystroke ()
+(defun vimgolf-capture-keystroke
+    ()
+  "Convenience function for capturing normal keystrokes."
   (vimgolf-maybe-capture-keystroke 'vimgolf-capturable-keystroke-p))
 
-(defun vimgolf-capture-dangling-keystroke ()
+(defun vimgolf-capture-dangling-keystroke
+    ()
+  "Convenience function for capturing dangling keystrokes."
   (vimgolf-maybe-capture-keystroke 'vimgolf-capturable-dangling-keystroke-p))
 
-(defun vimgolf-get-keystrokes-as-string (&optional separator)
+(defun vimgolf-get-keystrokes-as-string
+    (&optional separator)
+  "Convert current keystrokes to a human readable string."
   (unless separator (setq separator " "))
   (mapconcat 'key-description (mapcar 'car vimgolf-keystrokes) separator))
 
-(defun vimgolf-refresh-keystroke-log ()
+(defun vimgolf-refresh-keystroke-log
+    ()
   "Refresh the contents of the keystrokes log buffer."
   (let ((deactivate-mark nil))
     (with-current-buffer (get-buffer-create vimgolf-keystrokes-buffer-name)
@@ -176,45 +190,56 @@ unknown key sequence was entered).")
           (dolist (entry descrs-and-commands)
             (insert (format fmt (car entry) (prin1-to-string (cdr entry) t)) "\n")))))))
 
-(defun vimgolf-enable-capture (enable)
+(defun vimgolf-enable-capture
+    (enable)
   "Enable keystroke logging if `ENABLE' is non-nil otherwise disable it."
   (let ((f (if enable 'add-hook 'remove-hook)))
     (funcall f 'pre-command-hook 'vimgolf-capture-keystroke)
     (funcall f 'post-command-hook 'vimgolf-capture-dangling-keystroke)
     (funcall f 'post-command-hook 'vimgolf-refresh-keystroke-log)))
 
-(defun vimgolf-count-keystrokes ()
+(defun vimgolf-count-keystrokes
+    ()
   (apply '+ (mapcar 'length (mapcar 'car vimgolf-keystrokes))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Managing and scoring challenges
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun vimgolf-solution-correct-p ()
+(defun vimgolf-solution-correct-p
+    ()
   "Return t if the work text is identical to the solution, nil otherwise."
   (let ((working (with-current-buffer vimgolf-work-buffer-name (buffer-string)))
         (end (with-current-buffer vimgolf-end-buffer-name (buffer-string))))
     (string= working end)))
 
-(defun vimgolf-wrong-solution ()
+(defun vimgolf-wrong-solution
+    ()
+  "Inform the player they got it wrong."
   (message "Wrong!")
   (vimgolf-diff))
 
-(defun vimgolf-right-solution ()
+(defun vimgolf-right-solution
+    ()
+  "Inform they player they got it right."
   (delete-other-windows)
   (switch-to-buffer vimgolf-keystrokes-buffer-name)
   (message "Hurray! You solved %s in %d keystrokes!" vimgolf-challenge (vimgolf-count-keystrokes)))
 
-(defun vimgolf-submit ()
+(defun vimgolf-submit
+    ()
   "Stop the challenge and attempt to submit the solution to VimGolf."
   (interactive)
   (vimgolf-enable-capture nil)
   (if (vimgolf-solution-correct-p) (vimgolf-right-solution) (vimgolf-wrong-solution)))
 
-(defun vimgolf-clear-keystrokes ()
+(defun vimgolf-clear-keystrokes
+    ()
+  "Clear out what `vimgolf-mode' thinks the player's typed."
   (setq vimgolf-keystrokes nil))
 
-(defun vimgolf-reset-work-buffer ()
+(defun vimgolf-reset-work-buffer
+    ()
   "Reset the contents of the work buffer, and clear undo/macro history etc."
   (with-current-buffer (get-buffer-create vimgolf-work-buffer-name)
     (vimgolf-init-buffer (current-buffer)
@@ -226,34 +251,39 @@ unknown key sequence was entered).")
     (setq buffer-undo-list nil)
     (set-buffer-modified-p nil)))
 
-(defun vimgolf-revert ()
+(defun vimgolf-revert
+    ()
   "Revert the work buffer to it's original state and reset keystrokes."
   (interactive)
   (vimgolf-reset-work-buffer)
   (set-window-configuration vimgolf-working-window-configuration)
   (message "If at first you don't succeed, try, try again."))
 
-(defun vimgolf-diff ()
+(defun vimgolf-diff
+    ()
   "Pause the competition and view differences between the buffers."
   (interactive)
   (vimgolf-enable-capture nil)
   (ediff-buffers (get-buffer-create vimgolf-work-buffer-name) (get-buffer-create vimgolf-end-buffer-name))
   (message "Remember to `C-c C-v c` when you're done."))
 
-(defun vimgolf-continue ()
+(defun vimgolf-continue
+    ()
   "Restore work and end buffers and begin recording keystrokes again."
   (interactive)
   (vimgolf-enable-capture t)
   (set-window-configuration vimgolf-working-window-configuration)
   (message "Golf away!"))
 
-(defun vimgolf-pause ()
+(defun vimgolf-pause
+    ()
   "Stop recording keystrokes."
   (interactive)
   (vimgolf-enable-capture nil)
   (message "Come `C-c C-v c` soon."))
 
-(defun vimgolf-quit ()
+(defun vimgolf-quit
+    ()
   "Cancel the competition."
   (interactive)
   (vimgolf-enable-capture nil)
@@ -272,20 +302,27 @@ unknown key sequence was entered).")
 
 (defvar vimgolf-challenge-extension ".json")
 
-(defun vimgolf-challenge-path (challenge-id)
+(defun vimgolf-challenge-path
+    (challenge-id)
+  "Generate the challenge url path component."
   (concat "challenges/" challenge-id))
 
-(defun vimgolf-challenge-url (challenge-id)
+(defun vimgolf-challenge-url
+    (challenge-id)
+  "Generate the full VimGolf url for a particular challenge."
   (concat vimgolf-host (vimgolf-challenge-path challenge-id) vimgolf-challenge-extension))
 
-(defun vimgolf-init-buffer (buffer text)
+(defun vimgolf-init-buffer
+    (buffer text)
+  "Make BUFFER managed by `vimgolf-mode' ready to mess with TEXT."
   (with-current-buffer buffer
     (erase-buffer)
     (insert text)
     (goto-char (point-min))
     (vimgolf-mode t)))
 
-(defun vimgolf-kill-existing-session ()
+(defun vimgolf-kill-existing-session
+    ()
   "Kill any vimgolf-related buffers."
   (dolist (buf (list vimgolf-start-buffer-name
                      vimgolf-work-buffer-name
@@ -294,17 +331,27 @@ unknown key sequence was entered).")
     (when (get-buffer buf)
       (kill-buffer buf))))
 
-(defun vimgolf-get-text (var response)
+(defun vimgolf-get-text
+    (var response)
+  "Get text associated with VAR from a VimGolf RESPONSE."
   (format "%s" (assoc-default 'data (assq var response))))
 
-(defun vimgolf-retrieve-challenge (challenge-id)
+(defun vimgolf-retrieve-challenge
+    (challenge-id)
+  "Get CHALLENGE-ID's in and out text."
   (interactive)
   (with-current-buffer
       (url-retrieve-synchronously (vimgolf-challenge-url challenge-id))
     (goto-char url-http-end-of-headers)
     (json-read)))
 
-(defun vimgolf-setup (status challenge-id)
+(defun vimgolf-setup
+    (_ challenge-id)
+  "Setup Emacs to play VimGolf challenge CHALLENGE-ID.
+
+This function is a callback for `url-retrieve' but it doesn't
+attempt to deal with HTTP statuses gracefully so it throws that
+part of the arg list away."
   (let ((url-mime-encoding-string "identity"))
     (setq vimgolf-response (vimgolf-retrieve-challenge challenge-id)))
 
@@ -338,7 +385,11 @@ unknown key sequence was entered).")
 (defvar *vimgolf-browse-list* nil
   "Holds a list of parsed VimGolf challenges.")
 
-(defun vimgolf-browse (&optional force-pull)
+(defun vimgolf-browse
+    (&optional force-pull)
+  "Browse VimGolf challenges in a dedicated buffer.
+
+TODO Is there no API for browsing all the challenges?"
   (interactive)
   (if (or (eq *vimgolf-browse-list* nil)
           force-pull)
@@ -346,14 +397,20 @@ unknown key sequence was entered).")
     (vimgolf-browse-list)
     (vimgolf-browse-next)))
 
-(defun vimgolf-browse-refresh ()
+(defun vimgolf-browse-refresh
+    ()
+  "Refresh the VimGolf browser list."
   (interactive)
   (vimgolf-browse t))
 
-(defun vimgolf-replace-control-m (string &optional replace)
+(defun vimgolf-replace-control-m
+    (string &optional replace)
+  "Replace  in STRING"
   (replace-regexp-in-string "" (or replace " ") string))
 
-(defun vimgolf-parse-html-entites (string)
+(defun vimgolf-parse-html-entites
+    (string)
+  "Parse HTML entities from HTML partial STRING."
   (replace-regexp-in-string
    "&lt;" "<"
    (replace-regexp-in-string
@@ -364,7 +421,13 @@ unknown key sequence was entered).")
       "&quot" "\""
       string)))))
 
-(defun vimgolf-parse-browse-html (status)
+(defun vimgolf-parse-browse-html
+    (_)
+  "Callback function parsing VimGolf homepage HTML.
+
+No attempt is made to gracefully handle HTTP errors so the status
+argument is dropped on the floor."
+  ;; TODO is (with-current-buffer (current-buffer) …) necessary here?
   (with-current-buffer (current-buffer)
     (let ((html (vimgolf-parse-html-entites
                  (replace-regexp-in-string "\n" "" (buffer-string))))
@@ -385,7 +448,10 @@ unknown key sequence was entered).")
   (vimgolf-browse-list)
   (vimgolf-browse-next))
 
-(defun vimgolf-browse-list ()
+(defun vimgolf-browse-list
+    ()
+  "Setup a dedicated VimGolf Browser buffer."
+  ;; TODO I wonder how much of this could be replaced by EWW usage?
   (let ((browse-buffer (get-buffer-create "*VimGolf Browse*")))
     (switch-to-buffer browse-buffer)
     (setq buffer-read-only nil)
@@ -404,36 +470,46 @@ unknown key sequence was entered).")
         (insert-text-button title
                             'action 'vimgolf-browse-select
                             'follow-link t
-                            'challenge-id challenge-id 
+                            'challenge-id challenge-id
                             'help-echo description))
       (newline)))
   (beginning-of-buffer)
   (vimgolf-browse-mode))
 
-(defun vimgolf-browse-select (arg)
+(defun vimgolf-browse-select
+    (arg)
+  "Start a `vimgolf-mode' session for challenge at point."
   (let ((challenge-id (get-text-property (point) 'challenge-id)))
     (vimgolf challenge-id)))
 
-(defun vimgolf-message-title ()
+(defun vimgolf-message-title
+    ()
+  "Got title for the challenge at point."
   (let ((challenge-id (get-text-property (point) 'challenge-id)))
     (when challenge-id
       (message (cadr (assoc challenge-id *vimgolf-browse-list*))))))
 
-(defun vimgolf-browse-next ()
+(defun vimgolf-browse-next
+    ()
+  "Move point to the next challenge."
   (interactive)
   (goto-char (next-single-property-change (point) 'challenge-id))
   (unless (get-text-property (point) 'challenge-id)
     (goto-char (next-single-property-change (point) 'challenge-id)))
   (vimgolf-message-title))
 
-(defun vimgolf-browse-previous ()
+(defun vimgolf-browse-previous
+    ()
+  "Move point to the previous challenge."
   (interactive)
   (goto-char (previous-single-property-change (point) 'challenge-id))
   (unless (get-text-property (point) 'challenge-id)
     (goto-char (previous-single-property-change (point) 'challenge-id)))
   (vimgolf-message-title))
 
-(defun vimgolf-show-description ()
+(defun vimgolf-show-description
+    ()
+  "Show the description for challenge at point."
   (interactive)
   (let ((challenge-id (get-text-property (point) 'challenge-id)))
     (save-excursion
