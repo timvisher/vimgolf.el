@@ -1,6 +1,6 @@
 * VimGolf TODO
 
-** Game Excersizes
+** Game Exercises
 
 ** Browser
 *** DONE Handle/fix character encoding

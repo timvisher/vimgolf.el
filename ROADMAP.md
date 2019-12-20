@@ -1,10 +1,12 @@
 # VimGolf Minor Mode Roadmap
 
+<!-- TODO move this into todo.org and rename todo.org to TODO.org -->
+
 ## Features
 
 1. Completing read of challenges by title rather than by challenge id
 
-2. `M-x vimgolf-browse`: Dired/Ibuffer/Magit-like interface to VimGolf
+1. `M-x vimgolf-browse`: Dired/Ibuffer/Magit-like interface to VimGolf
    challenges.
 
     Bindings:
@@ -58,7 +60,7 @@
       together so that you could record solutions or at least play
       offline.
 
-3. Play anarchy golf?
+1. ~~Play anarchy golf?~~
 
     [anarchy golf](http://golf.shinh.org/)
 
