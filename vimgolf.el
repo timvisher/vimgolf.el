@@ -336,14 +336,22 @@ unknown key sequence was entered).")
   "Get text associated with VAR from a VimGolf RESPONSE."
   (format "%s" (assoc-default 'data (assq var response))))
 
+(require 'url-http)
+
 (defun vimgolf-retrieve-challenge
     (challenge-id)
   "Get CHALLENGE-ID's in and out text."
   (interactive)
   (with-current-buffer
       (url-retrieve-synchronously (vimgolf-challenge-url challenge-id))
+    ;; `url-http-end-of-headers' is set by `url-retrieve-synchronously' as
+    ;; a local variable in the retrieval buffer to the position at the end
+    ;; of the headers.
     (goto-char url-http-end-of-headers)
     (json-read)))
+
+(defvar vimgolf-response nil
+  "Holds the most recent HTTP response from VimGolf")
 
 (defun vimgolf-setup
     (_ challenge-id)
