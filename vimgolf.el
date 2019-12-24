@@ -56,7 +56,7 @@
   :group 'vimgolf)
 
 (defcustom vimgolf-mode-hook '((lambda () (whitespace-mode t)))
-  "A list of functions to call upon the initialization of command `vimgolf-mode'."
+  "A list of functions to call upon the initialization of vimgolf."
   :type 'hook
   :group 'vimgolf)
 
@@ -167,7 +167,9 @@ unknown key sequence was entered).")
 
 (defun vimgolf-get-keystrokes-as-string
     (&optional separator)
-  "Convert current keystrokes to a human readable string."
+  "Convert current keystrokes to a human readable string.
+
+SEPARATOR defaults to ` '"
   (unless separator (setq separator " "))
   (mapconcat 'key-description (mapcar 'car vimgolf-keystrokes) separator))
 
@@ -200,6 +202,7 @@ unknown key sequence was entered).")
 
 (defun vimgolf-count-keystrokes
     ()
+  "Count keystrokes used for challenge."
   (apply '+ (mapcar 'length (mapcar 'car vimgolf-keystrokes))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -235,7 +238,7 @@ unknown key sequence was entered).")
 
 (defun vimgolf-clear-keystrokes
     ()
-  "Clear out what `vimgolf-mode' thinks the player's typed."
+  "Clear out what vimgolf thinks the player's typed."
   (setq vimgolf-keystrokes nil))
 
 (defun vimgolf-reset-work-buffer
@@ -304,17 +307,17 @@ unknown key sequence was entered).")
 
 (defun vimgolf-challenge-path
     (challenge-id)
-  "Generate the challenge url path component."
+  "Generate the challenge url path component for CHALLENGE-ID."
   (concat "challenges/" challenge-id))
 
 (defun vimgolf-challenge-url
     (challenge-id)
-  "Generate the full VimGolf url for a particular challenge."
+  "Generate the full VimGolf url for CHALLENGE-ID."
   (concat vimgolf-host (vimgolf-challenge-path challenge-id) vimgolf-challenge-extension))
 
 (defun vimgolf-init-buffer
     (buffer text)
-  "Make BUFFER managed by `vimgolf-mode' ready to mess with TEXT."
+  "Make BUFFER managed by vimgolf ready to mess with TEXT."
   (with-current-buffer buffer
     (erase-buffer)
     (insert text)
@@ -351,7 +354,7 @@ unknown key sequence was entered).")
     (json-read)))
 
 (defvar vimgolf-response nil
-  "Holds the most recent HTTP response from VimGolf")
+  "Holds the most recent HTTP response from VimGolf.")
 
 (defun vimgolf-setup
     (_ challenge-id)
@@ -390,16 +393,19 @@ part of the arg list away."
 
       (vimgolf-continue))))
 
-(defvar *vimgolf-browse-list* nil
+(defvar vimgolf--browse-list nil
   "Holds a list of parsed VimGolf challenges.")
 
 (defun vimgolf-browse
     (&optional force-pull)
   "Browse VimGolf challenges in a dedicated buffer.
 
+Optional FORCE-PULL will retrieve challenges again even if
+`vimgolf--browse-list' was already generated.
+
 TODO Is there no API for browsing all the challenges?"
   (interactive)
-  (if (or (eq *vimgolf-browse-list* nil)
+  (if (or (eq vimgolf--browse-list nil)
           force-pull)
       (url-retrieve vimgolf-host 'vimgolf-parse-browse-html)
     (vimgolf-browse-list)
@@ -413,7 +419,9 @@ TODO Is there no API for browsing all the challenges?"
 
 (defun vimgolf-replace-control-m
     (string &optional replace)
-  "Replace  in STRING"
+  "Replace  in STRING.
+
+Optional REPLACE defaults to ` '"
   (replace-regexp-in-string "" (or replace " ") string))
 
 (defun vimgolf-parse-html-entites
@@ -440,19 +448,19 @@ argument is dropped on the floor."
     (let ((html (vimgolf-parse-html-entites
                  (replace-regexp-in-string "\n" "" (buffer-string))))
           (start 0))
-      (setq *vimgolf-browse-list* nil)
+      (setq vimgolf--browse-list nil)
       (while
           (string-match
            "<a href=\"/challenges/\\([a-zA-Z0-9]+\\)\">\\(.*?\\)</a>.*?<p>\\(.*?\\)</p>"
            html)
-        (add-to-list '*vimgolf-browse-list*
+        (add-to-list 'vimgolf--browse-list
                      (cons (match-string 1 html)
                            (list (match-string 2 html)
                                  (vimgolf-replace-control-m
                                   (match-string 3 html))))
                      t)
         (setq html (substring html (match-end 0))))
-      *vimgolf-browse-list*))
+      vimgolf--browse-list))
   (vimgolf-browse-list)
   (vimgolf-browse-next))
 
@@ -466,7 +474,7 @@ argument is dropped on the floor."
     (kill-region (point-min) (point-max))
     (insert "VimGolf Challenges")
     (newline 2)
-    (dolist (challenge *vimgolf-browse-list*)
+    (dolist (challenge vimgolf--browse-list)
       (let ((title (substring (cadr challenge)
                               0
                               (min (length (cadr challenge))
@@ -485,8 +493,11 @@ argument is dropped on the floor."
   (vimgolf-browse-mode))
 
 (defun vimgolf-browse-select
-    (arg)
-  "Start a `vimgolf-mode' session for challenge at point."
+    (_)
+  "Start a vimgolf session for challenge at point.
+
+This function is used as a callback for `insert-text-button' but
+the arg is ignored."
   (let ((challenge-id (get-text-property (point) 'challenge-id)))
     (vimgolf challenge-id)))
 
@@ -495,7 +506,7 @@ argument is dropped on the floor."
   "Got title for the challenge at point."
   (let ((challenge-id (get-text-property (point) 'challenge-id)))
     (when challenge-id
-      (message (cadr (assoc challenge-id *vimgolf-browse-list*))))))
+      (message (cadr (assoc challenge-id vimgolf--browse-list))))))
 
 (defun vimgolf-browse-next
     ()
@@ -536,19 +547,19 @@ argument is dropped on the floor."
         (newline 3)
         (forward-line -1)
         (let ((start (point)))
-          (insert "  " (car (cddr (assoc challenge-id *vimgolf-browse-list*))))
+          (insert "  " (car (cddr (assoc challenge-id vimgolf--browse-list))))
           (fill-region start (point))
           (add-text-properties start (point) `(challenge-description ,challenge-id))))
       (setq buffer-read-only t))))
 
 ;;;###autoload
 (defun vimgolf (challenge-id)
-  "Open a VimGolf Challenge"
+  "Open a VimGolf session for CHALLENGE-ID."
   (interactive (list (read-from-minibuffer "Challenge ID: " nil nil nil 'vimgolf-challenge-history)))
   (url-retrieve (vimgolf-challenge-url challenge-id) 'vimgolf-setup `(,challenge-id)))
 
 (defvar vimgolf-browse-mode-map (make-sparse-keymap)
-  "Keymap for vimgolf-mode.")
+  "Keymap for vimgolf.")
 
 (define-derived-mode vimgolf-browse-mode special-mode "vimgolf browse"
   "A major mode for completing vimgolf challenges.
