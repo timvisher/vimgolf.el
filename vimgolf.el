@@ -489,7 +489,7 @@ argument is dropped on the floor."
                             'challenge-id challenge-id
                             'help-echo description))
       (newline)))
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (vimgolf-browse-mode))
 
 (defun vimgolf-browse-select
@@ -535,7 +535,7 @@ the arg is ignored."
       (setq buffer-read-only nil)
       (if (text-property-any (point-min) (point-max) 'challenge-description challenge-id)
           (progn
-            (beginning-of-buffer)
+            (goto-char (point-min))
             (while (not (eq (get-text-property (point) 'challenge-description) challenge-id))
               (goto-char (next-single-property-change (point) 'challenge-description)))
             (let ((start (point)))
@@ -568,8 +568,7 @@ the arg is ignored."
   (define-key vimgolf-browse-mode-map (kbd "TAB") 'vimgolf-show-description)
   (define-key vimgolf-browse-mode-map "g" 'vimgolf-browse-refresh)
   (define-key vimgolf-browse-mode-map "n" 'vimgolf-browse-next)
-  (define-key vimgolf-browse-mode-map "p" 'vimgolf-browse-previous)
-)
+  (define-key vimgolf-browse-mode-map "p" 'vimgolf-browse-previous))
 
 (put 'vimgolf-mode 'mode-class 'special)
 
