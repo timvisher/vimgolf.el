@@ -1,11 +1,12 @@
 ;;; vimgolf.el --- VimGolf interface for the One True Editor
 ;; Copyright (C) never, by no one
 
-;;; Author: Tim Visher <tim.visher@gmail.com>
-;;; Maintainer: Tim Visher <tim.visher@gmail.com>
-;;; Created: 2011-11-02
-;;; Version: 0.10.1
-;;; Keywords: games vimgolf vim
+;; Author: Tim Visher <tim.visher@gmail.com>
+;; Maintainer: Tim Visher <tim.visher@gmail.com>
+;; Created: 2011-11-02
+;; Version: 0.10.1
+;; Keywords: games vimgolf vim
+;; URL: https://github.com/timvisher/vimgolf.el
 
 ;; This file is not part of GNU Emacs
 
@@ -44,6 +45,8 @@
 ;;; Code:
 
 (require 'json)
+(require 'url-http)
+(defvar url-http-end-of-headers)
 
 (defgroup vimgolf nil
   "Compete on VimGolf with the One True Editor."
@@ -339,8 +342,6 @@ SEPARATOR defaults to ` '"
   "Get text associated with VAR from a VimGolf RESPONSE."
   (format "%s" (assoc-default 'data (assq var response))))
 
-(require 'url-http)
-
 (defun vimgolf-retrieve-challenge
     (challenge-id)
   "Get CHALLENGE-ID's in and out text."
@@ -446,8 +447,7 @@ argument is dropped on the floor."
   ;; TODO is (with-current-buffer (current-buffer) …) necessary here?
   (with-current-buffer (current-buffer)
     (let ((html (vimgolf-parse-html-entites
-                 (replace-regexp-in-string "\n" "" (buffer-string))))
-          (start 0))
+                 (replace-regexp-in-string "\n" "" (buffer-string)))))
       (setq vimgolf--browse-list nil)
       (while
           (string-match
