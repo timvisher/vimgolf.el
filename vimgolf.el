@@ -419,10 +419,10 @@ TODO Is there no API for browsing all the challenges?"
 
 (defun vimgolf-replace-control-m
     (string &optional replace)
-  "Replace  in STRING.
+  "Replace carriage return (ASCII Code 13) character in STRING.
 
 Optional REPLACE defaults to ` '"
-  (replace-regexp-in-string "" (or replace " ") string))
+  (replace-regexp-in-string (char-to-string 13) (or replace " ") string))
 
 (defun vimgolf-parse-html-entites
     (string)
