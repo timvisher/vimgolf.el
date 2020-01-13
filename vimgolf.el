@@ -21,7 +21,7 @@
 ;;
 ;; Patches and Issues are accepted at https://github.com/timvisher/vimgolf
 ;;
-;; [1]: http://vimgolf.com/
+;; [1]: https://vimgolf.com/
 
 ;;; Installation:
 
@@ -32,7 +32,7 @@
 
 ;;; License:
 
-;; [CC BY-NC-SA 3.0](http://creativecommons.org/licenses/by-nc-sa/3.0/)
+;; [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/)
 
 ;;; Contributors
 
@@ -294,10 +294,10 @@ SEPARATOR defaults to ` '"
   (set-window-configuration vimgolf-prior-window-configuration)
   (message "I declare you, n00b!"))
 
-(defvar vimgolf-host "http://www.vimgolf.com/")
+(defvar vimgolf-host "https://www.vimgolf.com/")
 
-;; (setq vimgolf-host "http://vimgolf.local:8888/")
-;; (setq vimgolf-host "http://vimgolf.com/")
+;; (setq vimgolf-host "https://vimgolf.local:8888/")
+;; (setq vimgolf-host "https://vimgolf.com/")
 ;; Overall VimGolf Rank ID: 4d2fb20e63b08b08b0000075
 ;; Sort entries based on date ID: 4ea9bc988b36f70001000008
 ;; HTML to Haml ID: 4d3c51f1aabf526ed6000030
