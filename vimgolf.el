@@ -503,7 +503,7 @@ the arg is ignored."
 
 (defun vimgolf-message-title
     ()
-  "Got title for the challenge at point."
+  "Get title for the challenge at point."
   (let ((challenge-id (get-text-property (point) 'challenge-id)))
     (when challenge-id
       (message (cadr (assoc challenge-id vimgolf--browse-list))))))
@@ -553,22 +553,24 @@ the arg is ignored."
       (setq buffer-read-only t))))
 
 ;;;###autoload
-(defun vimgolf (challenge-id)
+(defun vimgolf
+    (challenge-id)
   "Open a VimGolf session for CHALLENGE-ID."
   (interactive (list (read-from-minibuffer "Challenge ID: " nil nil nil 'vimgolf-challenge-history)))
   (url-retrieve (vimgolf-challenge-url challenge-id) 'vimgolf-setup `(,challenge-id)))
 
-(defvar vimgolf-browse-mode-map (make-sparse-keymap)
-  "Keymap for vimgolf.")
+(defvar vimgolf-browse-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap (kbd "TAB") 'vimgolf-show-description)
+    (define-key keymap "g" 'vimgolf-browse-refresh)
+    (define-key keymap "n" 'vimgolf-browse-next)
+    (define-key keymap "p" 'vimgolf-browse-previous)
+    keymap)
+  "Keymap for browsing VimGolf")
 
-(define-derived-mode vimgolf-browse-mode special-mode "vimgolf browse"
-  "A major mode for completing vimgolf challenges.
-
-\\{vimgolf-browse-mode-map}"
-  (define-key vimgolf-browse-mode-map (kbd "TAB") 'vimgolf-show-description)
-  (define-key vimgolf-browse-mode-map "g" 'vimgolf-browse-refresh)
-  (define-key vimgolf-browse-mode-map "n" 'vimgolf-browse-next)
-  (define-key vimgolf-browse-mode-map "p" 'vimgolf-browse-previous))
+(define-derived-mode vimgolf-browse-mode special-mode "VimGolf browse"
+  "A major mode for completing VimGolf challenges."
+  vimgolf-browse-mode-map)
 
 (put 'vimgolf-mode 'mode-class 'special)
 
