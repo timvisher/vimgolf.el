@@ -566,7 +566,7 @@ the arg is ignored."
     (define-key keymap "n" 'vimgolf-browse-next)
     (define-key keymap "p" 'vimgolf-browse-previous)
     keymap)
-  "Keymap for browsing VimGolf")
+  "Keymap for browsing VimGolf.")
 
 (define-derived-mode vimgolf-browse-mode special-mode "VimGolf browse"
   "A major mode for completing VimGolf challenges."
